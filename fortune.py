@@ -1,4 +1,4 @@
-#!/usr/local/bin/python3.7
+#!/usr/bin/env python3
 ############################################################################
 #    Copyright (C) 2008 by Michael Goerz                                   #
 #    http://www.physik.fu-berlin.de/~goerz                                 #
@@ -86,8 +86,6 @@ def get_random_fortune(fortunepaths, weighted=True, offensive=None,
         fortune_file = rselect_fortune_file(fortune_files, weights)
         data = fortune_file_data(fortune_file)
         (start, length) = random.choice(data)
-        #(start, length) = data[0]
-        #print (start, length)
         if (length < min_length
         or (max_length is not None and length > max_length)): 
             attempt += 1
@@ -378,10 +376,6 @@ def read_fortunes(fortune_file):
     start = -1
     pos = 0
     for line in fortune_file:
-        #print("Pos: " + str(pos))
-        #print("Length: " + str(len(line)))
-        #print(line)
-        
         if line == "%\n":
             if pos == 0: # "%" at top of file. Skip it.
                 continue
@@ -636,8 +630,8 @@ def main():
                 min_length=minlength,
                 max_length=maxlength) )
 
-    except (ValueError):
-        print (sys.stderr)
+    except ValueError as msg:
+        print (sys.stderr + msg)
         sys.exit(1)
 
     if not options.seconds_to_wait is None:
