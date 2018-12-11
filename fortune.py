@@ -631,7 +631,7 @@ def main():
                 max_length=maxlength) )
 
     except ValueError as msg:
-        print (sys.stderr + msg)
+        print(msg, file=sys.stderr)
         sys.exit(1)
 
     if not options.seconds_to_wait is None:
