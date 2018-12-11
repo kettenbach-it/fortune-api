@@ -329,7 +329,7 @@ def fortune_file_data(fortune_file):
     """ Return the pickled index for fortune_file """
     fortune_index_file = str(fortune_file) + INDEX_EXT
     if not os.path.exists(fortune_index_file):
-        raise (ValueError, 'Can\'t find file "%s"' % fortune_index_file)
+        raise ValueError('Can\'t find file "%s"' % fortune_index_file)
     fortune_index = open(fortune_index_file, 'rb')
     data = pickle.load(fortune_index)
     fortune_index.close()
