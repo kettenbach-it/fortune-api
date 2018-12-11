@@ -578,8 +578,8 @@ def main():
         try:
             fortunepaths = os.environ['FORTUNE_PATH'].split(':')
         except KeyError:
-            print >> sys.stderr, "Missing fortune files"
-            print >> sys.stderr, "Try %s --help" % os.path.basename(sys.argv[0])
+            print ("Missing fortune files", file=sys.stderr)
+            print ("Try %s --help" % os.path.basename(sys.argv[0]), file=sys.stderr)
             sys.exit(1)
 
     if options.use_all:
