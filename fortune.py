@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/local/bin/python3.7
 ############################################################################
 #    Copyright (C) 2008 by Michael Goerz                                   #
 #    http://www.physik.fu-berlin.de/~goerz                                 #
@@ -30,7 +30,7 @@ import random
 import os
 import sys
 import re
-import cPickle as pickle
+import pickle
 from optparse import OptionParser, IndentedHelpFormatter
 from glob import glob
 from time import sleep
@@ -86,7 +86,9 @@ def get_random_fortune(fortunepaths, weighted=True, offensive=None,
         fortune_file = rselect_fortune_file(fortune_files, weights)
         data = fortune_file_data(fortune_file)
         (start, length) = random.choice(data)
-        if (length < min_length 
+        #(start, length) = data[0]
+        #print (start, length)
+        if (length < min_length
         or (max_length is not None and length > max_length)): 
             attempt += 1
             if attempt > ATTEMPTS:
@@ -94,7 +96,7 @@ def get_random_fortune(fortunepaths, weighted=True, offensive=None,
                              "that matches your criteria. They are too strict."
                 return ""
             continue
-        ffh = open(fortune_file, 'rU')
+        ffh = open(fortune_file, 'r', encoding='utf8')
         ffh.seek(start)
         fortunecookie = ffh.read(length)
         ffh.close()
@@ -281,7 +283,7 @@ def filter_fortunes(fortunepaths, pattern, ignorecase=True, offensive=None,
         print >> sys.stderr, "(" + os.path.split(fortune_file)[1] + ")"
         print >> sys.stderr, "%"
         sys.stderr.flush()
-        fortunes = read_fortunes(open(fortune_file, 'rU'))
+        fortunes = read_fortunes(open(fortune_file, 'r', encoding='utf8'))
         while not found_first_match:
             try:
                 start, length, fortune = fortunes.next()
@@ -289,7 +291,7 @@ def filter_fortunes(fortunepaths, pattern, ignorecase=True, offensive=None,
                 or (max_length is not None and length > max_length)):
                     continue
                 if regex_filter.search(fortune):
-                    print fortune
+                    print(fortune)
                     found_first_match = True
             except StopIteration:
                 break
@@ -298,7 +300,7 @@ def filter_fortunes(fortunepaths, pattern, ignorecase=True, offensive=None,
         or (max_length is not None and length > max_length)):
             continue
         if regex_filter.search(fortune):
-            print "%"
+            print("%")
             sys.stdout.write(fortune)
     sys.stdout.flush()
 
@@ -307,13 +309,13 @@ def filter_fortunes(fortunepaths, pattern, ignorecase=True, offensive=None,
         print >> sys.stderr, "%"
         print >> sys.stderr, "(" + os.path.split(fortune_file)[1] + ")"
         sys.stderr.flush()
-        fortunes = read_fortunes(open(fortune_file, 'rU'))
+        fortunes = read_fortunes(open(fortune_file, 'r', encoding='utf8'))
         for start, length, fortune in fortunes: # starting a second!
             if (length < min_length 
             or (max_length is not None and length > max_length)):
                 continue
             if regex_filter.search(fortune):
-                print "%"
+                print("%")
                 sys.stdout.write(fortune)
         sys.stdout.flush()
 
@@ -329,8 +331,8 @@ def fortune_file_data(fortune_file):
     """ Return the pickled index for fortune_file """
     fortune_index_file = str(fortune_file) + INDEX_EXT
     if not os.path.exists(fortune_index_file):
-        raise ValueError, 'Can\'t find file "%s"' % fortune_index_file
-    fortune_index = open(fortune_index_file)
+        raise (ValueError, 'Can\'t find file "%s"' % fortune_index_file)
+    fortune_index = open(fortune_index_file, 'rb')
     data = pickle.load(fortune_index)
     fortune_index.close()
     return data
@@ -362,33 +364,37 @@ def rselect_fortune_file(fortune_files, weights=None):
         if total >= rand_limit:
             return fortune_files[i]
         i += 1
-    raise Exception, "Couldn't select a fortune file"
+    raise (Exception, "Couldn't select a fortune file")
 
 
 
 def read_fortunes(fortune_file):
-    """ Return iterator yielding tuples (startline, length, fortune)
-        where startline is the line nr in the fortune file where the
-        fortune starts, length is the number of lines of the fortune,
+    """ Return iterator yielding tuples (start, length, fortune)
+        where start is the byte nr in the fortune file where the
+        fortune starts, length is the number of bytes of the fortune,
         and fortune is the text of the fortune as a string.
     """
     fortune_lines = []
     start = -1
     pos = 0
     for line in fortune_file:
+        #print("Pos: " + str(pos))
+        #print("Length: " + str(len(line)))
+        #print(line)
+        
         if line == "%\n":
             if pos == 0: # "%" at top of file. Skip it.
                 continue
             fortune = "".join(fortune_lines)
             if fortune != "": 
-                yield (start, pos - start, fortune)
+                yield (start , len(fortune), fortune)
             fortune_lines = []
             start = -1
         else:
             if start == -1:
                 start = pos
             fortune_lines.append(line)
-        pos += len(line)
+        pos += len(line.encode('utf8'))
 
     fortune = "".join(fortune_lines)
     if fortune != "": 
@@ -413,14 +419,16 @@ def make_fortune_data_file(fortunepaths, quiet=False):
 
         fortune_index_file = fortune_file + INDEX_EXT
         if not quiet:
-            print 'Updating "%s" from "%s"...' \
-                                            % (fortune_index_file, fortune_file)
+            print('Updating "%s" from "%s"...' \
+                                            % (fortune_index_file, fortune_file))
 
         data = []
-        shortest = sys.maxint
+        shortest = sys.maxsize
         longest = 0
-        for start, length, fortune in read_fortunes(open(fortune_file, 'rU')):
+        for start, length, fortune in read_fortunes(open(fortune_file, 'r', encoding='utf8')):
             data += [(start, length)]
+            #print ("Wrote: " + str(start), str(length))
+            #print
             shortest = min(shortest, length)
             longest = max(longest, length)
 
@@ -429,8 +437,8 @@ def make_fortune_data_file(fortunepaths, quiet=False):
         fortune_index.close()
 
         if not quiet:
-            print 'Processed %d fortunes.\nLongest: %d\nShortest %d' % \
-                (len(data), longest, shortest)
+            print('Processed %d fortunes.\nLongest: %d\nShortest %d' % \
+                (len(data), longest, shortest))
 
 
 
@@ -611,7 +619,7 @@ def main():
             percentages, fortune_files = fortune_files_from_paths(fortunepaths,
                                                                   offensive)
             for filename in fortune_files:
-                print filename
+                print (filename)
 
         # Filtering Mode
         elif not options.pattern is None:
@@ -628,8 +636,8 @@ def main():
                 min_length=minlength,
                 max_length=maxlength) )
 
-    except ValueError, msg:
-        print >> sys.stderr, msg
+    except (ValueError):
+        print (sys.stderr)
         sys.exit(1)
 
     if not options.seconds_to_wait is None:

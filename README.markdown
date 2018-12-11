@@ -1,8 +1,12 @@
 # fortune.py
 
+This is a fork of
+
 [http://github.com/goerz/fortune.py](http://github.com/goerz/fortune.py)
 
 Author: [Michael Goerz](http://michaelgoerz.net)
+
+with support for Python3 (3.7.1) and UTF8 fortune cookie files (german, chinese etc.)
 
 Print a random, hopefully interesting, adage ("fortune"), selected from a
 collection of fortune files
